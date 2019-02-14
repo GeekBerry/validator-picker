@@ -1,0 +1,15 @@
+{
+  "name": "validator-picker",
+  "version": "0.0.1",
+  "description": "validator and picker",
+  "author": "geekberry@qq.com",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "validator": "^10.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeekBerry/validator-picker.git"
+  }
+}
