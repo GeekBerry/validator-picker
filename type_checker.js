@@ -105,5 +105,5 @@ class TypeChecker extends TypeCheckerBase {
   }
 }
 
-module.exports = TypeChecker;
-
+module.exports = new TypeChecker();
+module.exports.TypeChecker = TypeChecker;
