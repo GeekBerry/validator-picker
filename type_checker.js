@@ -29,8 +29,13 @@ class TypeCheckerBase {
    * @param extend {String} 父类型名称
    * @param parser {function(string=*)} 字符串解析器
    * @param validator {function(*=Boolean)} 验证器
+   * @param rest {Object} 不能有其他参数
    */
-  set(name, { extend = undefined, parser = v => v, validator = () => true } = {}) {
+  set(name, { extend = undefined, parser = v => v, validator = () => true, ...rest } = {}) {
+    if (Object.keys(rest).length) {
+      throw new Error(`unknown args ${Object.keys(rest).join(',')}`);
+    }
+
     const extendedChecker = extend === undefined ? v => v : this.get(extend);
 
     function checker(value) {
