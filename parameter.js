@@ -3,16 +3,16 @@ const validatorLib = require('validator');
 const typeChecker = require('./type_checker');
 
 // =====================================================================================================================
-typeChecker.set('mongo', { parent: 'string', validator: validatorLib.isMongoId });
-typeChecker.set('uuid', { parent: 'string', validator: validatorLib.isUUID });
-typeChecker.set('md5', { parent: 'string', validator: validatorLib.isMD5 });
-typeChecker.set('base64', { parent: 'string', validator: validatorLib.isBase64 });
-typeChecker.set('ip', { parent: 'string', validator: validatorLib.isIP });
+typeChecker.set('mongo', { extend: 'string', validator: validatorLib.isMongoId });
+typeChecker.set('uuid', { extend: 'string', validator: validatorLib.isUUID });
+typeChecker.set('md5', { extend: 'string', validator: validatorLib.isMD5 });
+typeChecker.set('base64', { extend: 'string', validator: validatorLib.isBase64 });
+typeChecker.set('ip', { extend: 'string', validator: validatorLib.isIP });
 
-typeChecker.set('url', { parent: 'trim', validator: validatorLib.isURL });
-typeChecker.set('uri', { parent: 'trim', validator: validatorLib.isDataURI });
-typeChecker.set('magnet', { parent: 'trim', validator: validatorLib.isMagnetURI });
-typeChecker.set('email', { parent: 'trim', validator: validatorLib.isEmail });
+typeChecker.set('url', { extend: 'str', validator: validatorLib.isURL });
+typeChecker.set('uri', { extend: 'str', validator: validatorLib.isDataURI });
+typeChecker.set('magnet', { extend: 'str', validator: validatorLib.isMagnetURI });
+typeChecker.set('email', { extend: 'str', validator: validatorLib.isEmail });
 
 // =====================================================================================================================
 class Parameter {
@@ -104,4 +104,4 @@ function parameter(schema) {
 }
 
 module.exports = parameter;
-module.exports.Types = typeChecker;
+module.exports.types = typeChecker;
