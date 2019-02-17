@@ -95,8 +95,8 @@ class TypeChecker extends TypeCheckerBase {
     this.set('number', { validator: lodash.isNumber });
     this.set('integer', { extend: 'number', validator: lodash.isInteger });
     this.set('unsigned', { extend: 'integer', validator: v => v >= 0 });
+    this.set('array', { validator: lodash.isArray });
     this.set('object', { validator: lodash.isObject });
-    this.set('json', { parser: JSON.parse });
 
     // 缩写的类型名称代表能兼容字符串
     this.set('bool', {
@@ -107,6 +107,8 @@ class TypeChecker extends TypeCheckerBase {
     this.set('num', { parser: Number, extend: 'number', validator: v => !lodash.isNaN(v) });
     this.set('int', { parser: Number, extend: 'integer' });
     this.set('uint', { parser: Number, extend: 'unsigned' });
+    this.set('arr', { parser: v => v.split(','), extend: 'array' });
+    this.set('obj', { parser: JSON.parse, extend: 'object' });
   }
 }
 

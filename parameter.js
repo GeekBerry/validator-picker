@@ -3,6 +3,8 @@ const validatorLib = require('validator');
 const typeChecker = require('./type_checker');
 
 // =====================================================================================================================
+typeChecker.set('json', { extend: 'string', validator: validatorLib.isJson });
+
 typeChecker.set('mongo', { extend: 'string', validator: validatorLib.isMongoId });
 typeChecker.set('uuid', { extend: 'string', validator: validatorLib.isUUID });
 typeChecker.set('md5', { extend: 'string', validator: validatorLib.isMD5 });

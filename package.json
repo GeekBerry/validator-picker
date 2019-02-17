@@ -1,15 +1,38 @@
 {
   "name": "validator-picker",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "validator and picker",
   "author": "geekberry@qq.com",
   "license": "MIT",
+  "main": "index.js",
+  "homepage": "https://github.com/GeekBerry/validator-picker#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeekBerry/validator-picker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GeekBerry/validator-picker/issues"
+  },
   "dependencies": {
     "lodash": "^4.17.11",
     "validator": "^10.11.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/GeekBerry/validator-picker.git"
-  }
+  "devDependencies": {},
+  "keywords": [
+    "validator",
+    "picker",
+    "parameter",
+    "checker",
+    "object",
+    "type",
+    "parser"
+  ],
+  "files": [
+    "readme.js",
+    "index.js",
+    "type_checker.js",
+    "type_picker.js",
+    "parameter.js",
+    "deep_picker.js"
+  ]
 }
