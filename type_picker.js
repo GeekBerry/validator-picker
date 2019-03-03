@@ -26,6 +26,16 @@ function compile(schema) {
     return v => (lodash.isString(v) ? v : undefined);
   }
 
+  // 因为 lodash.isObject(data) === true, 所以要先于 schema === Object 判断
+  if (schema === Date) {
+    return v => (lodash.isDate(v) ? v : undefined);
+  }
+
+  if (schema === Buffer) {
+    return v => (lodash.isBuffer(v) ? v : undefined);
+  }
+
+  // 因为 lodash.isObject(array) === true, 所以要先于 schema === Object 判断
   if (schema === Array) {
     return v => (lodash.isArray(v) ? v : undefined);
   }

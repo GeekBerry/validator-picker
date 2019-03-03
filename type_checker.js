@@ -1,24 +1,26 @@
 const lodash = require('lodash');
 
+class TypeError extends Error {}
+
 // =====================================================================================================================
 class TypeCheckerBase {
   constructor() {
     this.table = {};
   }
 
-  names() {
+  get names() {
     return Object.keys(this.table);
   }
 
   /**
    * 获取一个类型检查器
    * @param name {String}
-   * @return {function(*=*|Error)}
+   * @return {function(*=*|TypeError)}
    */
   get(name) {
     const checker = this.table[name];
     if (!checker) {
-      throw new Error(`Can not found type checker "${name}"`);
+      throw new TypeError(`Can not found type checker "${name}"`);
     }
     return checker;
   }
@@ -33,7 +35,7 @@ class TypeCheckerBase {
    */
   set(name, { extend = undefined, parser = v => v, validator = () => true, ...rest } = {}) {
     if (Object.keys(rest).length) {
-      throw new Error(`unknown args ${Object.keys(rest).join(',')}`);
+      throw new TypeError(`unknown args ${Object.keys(rest).join(',')}`);
     }
 
     const extendedChecker = extend === undefined ? v => v : this.get(extend);
@@ -44,18 +46,18 @@ class TypeCheckerBase {
         try {
           value = parser(value);
         } catch (e) {
-          throw new Error(name);
+          throw new TypeError(name);
         }
       }
 
       try {
         value = extendedChecker(value);
       } catch (e) {
-        throw new Error(name);
+        throw new TypeError(name);
       }
 
       if (!validator(value)) {
-        throw new Error(name);
+        throw new TypeError(name);
       }
 
       return value;
@@ -67,7 +69,7 @@ class TypeCheckerBase {
   /**
    * 将多个类型合并为一个析取检查器
    * @param names {String[]}
-   * @return {function(*=*|Error)}
+   * @return {function(*=*|TypeError)}
    */
   disjunctive(names) {
     const checkers = names.map(k => this.get(k));
@@ -80,7 +82,7 @@ class TypeCheckerBase {
           typeNames.push(e.message);
         }
       }
-      throw new Error(typeNames.join('|'));
+      throw new TypeError(typeNames.join('|'));
     };
   }
 }
@@ -97,6 +99,7 @@ class TypeChecker extends TypeCheckerBase {
     this.set('unsigned', { extend: 'integer', validator: v => v >= 0 });
     this.set('array', { validator: lodash.isArray });
     this.set('object', { validator: lodash.isObject });
+    this.set('buffer', { validator: lodash.isBuffer });
 
     // 缩写的类型名称代表能兼容字符串
     this.set('bool', {
@@ -114,3 +117,4 @@ class TypeChecker extends TypeCheckerBase {
 
 module.exports = new TypeChecker();
 module.exports.TypeChecker = TypeChecker;
+module.exports.TypeError = TypeError;

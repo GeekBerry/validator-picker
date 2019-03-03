@@ -1,10 +1,13 @@
 {
   "name": "validator-picker",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "validator and picker",
   "author": "geekberry@qq.com",
   "license": "MIT",
   "main": "index.js",
+  "scripts": {
+    "test": "node ./test"
+  },
   "homepage": "https://github.com/GeekBerry/validator-picker#readme",
   "repository": {
     "type": "git",
@@ -28,6 +31,8 @@
     "parser"
   ],
   "files": [
+    "example",
+    "test",
     "readme.js",
     "index.js",
     "type_checker.js",
