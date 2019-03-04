@@ -3,9 +3,18 @@
 ## Install
 `npm install validator-picker`
 
+## Modules
+
+```
+type_checker.js 
+parameter.js
+type_picker.js
+deep_picker.js
+```
+
 ## Usage
 
-### typeChecker
+### 1. typeChecker
 
 用于对类型进行校验, 通常不单独使用, 配合 `parameter` 用于参数提取.  
 Used to calibrate the type, usually don't use alone, cooperate `parameter` to validator and picker data.
@@ -49,7 +58,7 @@ console.log(typeChecker.get('custom')('my data')); // 'MY DATA'
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/type_checker.js)
 
-### parameter
+### 2. parameter
 
 * Types
 
@@ -127,7 +136,7 @@ console.log(ret)
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/parameter.js)
 
-### typePicker
+### 3. typePicker
 
 通常用于输出数据前, 对返回值的域范围和类型进行过滤和限定.  
 It is usually used to filter and qualify the field scope and type of the return value before output data.
@@ -229,3 +238,79 @@ console.log(detailedPicker(user));
 Fields whose types do not match the definition will not be output, as you see when `score` is null it is not been output. 
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/type_picker.js)
+
+### 4. deepPicker
+
+用于从将复杂结构的数据中提取除部分信息.  
+Used to extract partial information from data in a complex structure.
+
+(吐槽一下对阿里云反人类的API返回值, 其嵌套之深和结构之复杂简直令人发指, 为此特别设计此函数以化简返回值结构和降低嵌套深度, 并更改过长变量名称和大小写)
+
+* Example date
+
+```javascript
+const data = {
+  body: {
+    Country: {
+      State: {
+        Name: 'HeBei',
+        Cities: [
+          { Name: 'BaoDing', ParticulateMatter: [10, 200] },
+          { Name: 'ShiJiaZhuang', ParticulateMatter: [50, 400] },
+        ],
+      },
+    },
+  },
+};
+```
+
+* use as a function
+
+```javascript
+const deepPicker = require('validator-picker/deep_picker');
+
+const picker = deepPicker('body', {
+  name: 'Country.State.Name',
+  city: deepPicker('Country.State.Cities', {
+    name: 'Name',
+    pm_2: 'ParticulateMatter[0]',
+    pm_10: 'ParticulateMatter[1]',
+  }),
+});
+
+console.log(picker(data));
+/*
+{ name: 'HeBei',
+  city: 
+   [ { name: 'BaoDing', pm_2: 10, pm_10: 200 },
+     { name: 'ShiJiaZhuang', pm_2: 50, pm_10: 400 } ] }
+ */
+```
+
+* use schema to implement the same function
+
+```javascript
+const deepPicker = require('validator-picker/deep_picker');
+
+// use '$' field to set the path of rest elements
+const picker = deepPicker.compile({
+  $: 'body',
+  name: 'Country.State.Name',
+  city: {
+    $: 'Country.State.Cities',
+    name: 'Name',
+    pm_2: 'ParticulateMatter[0]',
+    pm_10: 'ParticulateMatter[1]',
+  },
+});
+
+console.log(picker(data));
+/*
+{ name: 'HeBei',
+  city: 
+   [ { name: 'BaoDing', pm_2: 10, pm_10: 200 },
+     { name: 'ShiJiaZhuang', pm_2: 50, pm_10: 400 } ] }
+ */
+```
+
+[more example](https://github.com/GeekBerry/validator-picker/blob/master/example/deep_picker.js)
