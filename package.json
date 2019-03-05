@@ -1,6 +1,6 @@
 {
   "name": "validator-picker",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "validator and picker",
   "author": "geekberry@qq.com",
   "license": "MIT",
@@ -38,6 +38,7 @@
     "type_checker.js",
     "type_picker.js",
     "parameter.js",
-    "deep_picker.js"
+    "deep_picker.js",
+    "regex_picker.js"
   ]
 }

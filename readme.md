@@ -10,6 +10,7 @@ type_checker.js
 parameter.js
 type_picker.js
 deep_picker.js
+regex_picker.js
 ```
 
 ## Usage
@@ -314,3 +315,56 @@ console.log(picker(data));
 ```
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/deep_picker.js)
+
+### 5. regexPicker
+
+用于更方便的从正则表达式中获取所需的域.  
+To make it easier to get the required fields from regular expressions.  
+
+* Example
+
+```javascript
+const regexPicker = require('validator-picker/regex_picker');
+
+const picker = regexPicker(
+  /^nation-(\w+)(\.(municipality|state)-(\w+))?(\.city-(\w+))?/,
+  ['nationName', ['stateType', 'stateName'], ['cityName']],
+);
+```
+
+正则表达式: `/^nation-(\w+)(\.(municipality|state)-(\w+))?(\.city-(\w+))?/`  
+将由`()`包含的结构简化: `(nationName)((stateType)(stateName))((cityName))`  
+写为提取域: `['nationName', ['stateType', 'stateName'], ['cityName']]`
+
+```javascript
+console.log(picker('it is not match to regex'));
+// {}
+
+console.log(picker('nation-china.city-beijing'));
+/*
+{ 'nationName~stateType~stateName~city': 'nation-china.city-beijing',
+  nationName: 'china',
+  cityName: 'beijing' }
+ */
+
+console.log(picker('nation-china.state-hebei'));
+/*
+{ 'nationName~stateType~stateName~cityName': 'nation-china.state-hebei',
+  nationName: 'china',
+  'stateType~stateName': '.state-hebei',
+  stateType: 'state',
+  stateName: 'hebei' }
+ */
+
+console.log(picker('nation-china.municipality-xinjiang.city-wulumuqi'));
+/*
+{ 'nationName~stateType~stateName~cityName': 'nation-china.municipality-xinjiang.city-wulumuqi',
+  nationName: 'china',
+  'stateType~stateName': '.municipality-xinjiang',
+  stateType: 'municipality',
+  stateName: 'xinjiang',
+  cityName: 'wulumuqi' }
+ */
+```
+
+[more example](https://github.com/GeekBerry/validator-picker/blob/master/example/regex_picker.js)
