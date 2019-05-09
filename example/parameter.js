@@ -1,6 +1,6 @@
 const parameter = require('../parameter');
 
-parameter.types.set('positive', { parser: v => v, extend: 'num', validator: v => v > 0 });
+parameter.TYPES.positive = parameter.TYPES.num.extend('positive', { validator: v => v > 0 });
 
 let ret;
 

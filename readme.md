@@ -8,64 +8,33 @@
 ```
 type_checker.js 
 parameter.js
-type_picker.js
 deep_picker.js
 regex_picker.js
 ```
 
 ## Usage
 
-### 1. typeChecker
-
-用于对类型进行校验, 通常不单独使用, 配合 `parameter` 用于参数提取.  
-Used to calibrate the type, usually don't use alone, cooperate `parameter` to validator and picker data.
+### 1. parameter
 
 * Types
 
 type      | note
 ----------|-----------------------------------------------------------------------------
-'any'     | accept any type
-'boolean' | base on `lodash.isBoolean`.
-'bool'    | extend `boolean`, auto parser "true", "1", "false", "0" ignore case.
-'string'  | base on `lodash.isString`.
-'str'     | extend `string`, auto trim and check length > 0
-'number'  | base on `lodash.isNumber`.
-'num'     | extend `number`, auto parser string to number
-'integer' | base on `lodash.isInteger`.
-'int'     | extend `integer`, auto parser string to number
-'unsigned'| extend `integer`, which check value >= 0 
-'uint'    | extend `unsigned`, auto parser string to number
-'array'   | base on `lodash.isArray`.
-'arr'     | extend `array`, auto parser string like '1,2,3'
-'object'  | base on `lodash.isObject`.
-'obj'     | extend `object`, auto parser json string '{"name":"Tom"}'
-
-* Example
-```javascript
-const typeChecker = require('validator-picker/type_checker');
-
-console.log(typeChecker.get('num')('123.4')); // 123.4
-console.log(typeChecker.get('arr')('1,2,3')); // [1,2,3]
-console.log(typeChecker.get('obj')('{"name":"Tom"}')); // { name: 'Tom' }
-```
-
-* Extend
-
-```javascript
-typeChecker.set('custom', { parser: v => v.toUpperCase(), extend: 'string', validator: v => v.startsWith('MY') });
-console.log(typeChecker.get('custom')('my data')); // 'MY DATA'
-// console.log(typeChecker.get('custom')('his data')); // typeChecker.TypeError: 'custom'
-```
-
-[more example](https://github.com/GeekBerry/validator-picker/blob/master/example/type_checker.js)
-
-### 2. parameter
-
-* Types
-
-type      | note
-----------|-----------------------------------------------------------------------------
-...       | typeChecker types
+any       | accept any type
+boolean   | base on `lodash.isBoolean`.
+bool      | extend `boolean`, auto parser "true", "1", "false", "0" ignore case.
+string    | base on `lodash.isString`.
+str       | extend `string`, auto trim and check length > 0
+number    | base on `lodash.isNumber`.
+num       | extend `number`, auto parser string to number
+integer   | base on `lodash.isInteger`.
+int       | extend `integer`, auto parser string to number
+unsigned  | extend `integer`, which check value >= 0 
+uint      | extend `unsigned`, auto parser string to number
+array     | base on `lodash.isArray`.
+arr       | extend `array`, auto parser string like '1,2,3'
+object    | base on `lodash.isObject`.
+obj       | extend `object`, auto parser json string '{"name":"Tom"}'
 json      | extend `string`, base on validator.isJson
 mongo     | extend `string`, base on validator.isMongoId
 uuid      | extend `string`, base on validator.isUUID
@@ -99,7 +68,7 @@ const ctx = {
 
 ```javascript
 // extend your own type
-parameter.types.set('positive', { parser: v => v, extend: 'num', validator: v => v > 0 });
+parameter.TYPES.positive = parameter.TYPES.num.extend('positive', { validator: v => v > 0 });
 
 const ret = parameter({
   id: { path: 'params', type: 'uuid', required: true },
@@ -137,7 +106,7 @@ console.log(ret)
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/parameter.js)
 
-### 3. typePicker
+### 2. typePicker
 
 通常用于输出数据前, 对返回值的域范围和类型进行过滤和限定.  
 It is usually used to filter and qualify the field scope and type of the return value before output data.
@@ -240,12 +209,10 @@ Fields whose types do not match the definition will not be output, as you see wh
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/type_picker.js)
 
-### 4. deepPicker
+### 3. deepPicker
 
 用于从将复杂结构的数据中提取除部分信息.  
 Used to extract partial information from data in a complex structure.
-
-(吐槽一下对阿里云反人类的API返回值, 其嵌套之深和结构之复杂简直令人发指, 为此特别设计此函数以化简返回值结构和降低嵌套深度, 并更改过长变量名称和大小写)
 
 * Example date
 
@@ -316,7 +283,7 @@ console.log(picker(data));
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/deep_picker.js)
 
-### 5. regexPicker
+### 4. regexPicker
 
 用于更方便的从正则表达式中获取所需的域.  
 To make it easier to get the required fields from regular expressions.  
@@ -327,43 +294,47 @@ To make it easier to get the required fields from regular expressions.
 const regexPicker = require('validator-picker/regex_picker');
 
 const picker = regexPicker(
-  /^nation-(\w+)(\.(municipality|state)-(\w+))?(\.city-(\w+))?/,
+  /nation-(\w+)(\.(municipality|state)-(\w+))?(\.city-(\w+))?/,
   ['nationName', ['stateType', 'stateName'], ['cityName']],
 );
 ```
 
-正则表达式: `/^nation-(\w+)(\.(municipality|state)-(\w+))?(\.city-(\w+))?/`  
+正则表达式: `/nation-(\w+)(\.(municipality|state)-(\w+))?(\.city-(\w+))?/`  
 将由`()`包含的结构简化: `(nationName)((stateType)(stateName))((cityName))`  
 写为提取域: `['nationName', ['stateType', 'stateName'], ['cityName']]`
 
 ```javascript
 console.log(picker('it is not match to regex'));
-// {}
+// []
 
 console.log(picker('nation-china.city-beijing'));
 /*
-{ 'nationName~stateType~stateName~city': 'nation-china.city-beijing',
-  nationName: 'china',
-  cityName: 'beijing' }
+[ { nationName: 'china', cityName: 'beijing' } ]
  */
 
 console.log(picker('nation-china.state-hebei'));
 /*
-{ 'nationName~stateType~stateName~cityName': 'nation-china.state-hebei',
-  nationName: 'china',
-  'stateType~stateName': '.state-hebei',
-  stateType: 'state',
-  stateName: 'hebei' }
+[ { nationName: 'china', stateType: 'state', stateName: 'hebei' } ]
  */
 
 console.log(picker('nation-china.municipality-xinjiang.city-wulumuqi'));
 /*
-{ 'nationName~stateType~stateName~cityName': 'nation-china.municipality-xinjiang.city-wulumuqi',
-  nationName: 'china',
-  'stateType~stateName': '.municipality-xinjiang',
-  stateType: 'municipality',
-  stateName: 'xinjiang',
-  cityName: 'wulumuqi' }
+[ { nationName: 'china',
+    stateType: 'municipality',
+    stateName: 'xinjiang',
+    cityName: 'wulumuqi' } ]
+ */
+
+console.log(picker('nation-china.city-beijing && nation-china.state-hebei'));
+/*
+[ { nationName: 'china', cityName: 'beijing' } ]
+*/
+
+// 进行全局查找
+console.log(picker('nation-china.city-beijing && nation-china.state-hebei', 'g'));
+/*
+[ { nationName: 'china', cityName: 'beijing' },
+  { nationName: 'china', stateType: 'state', stateName: 'hebei' } ]
  */
 ```
 

@@ -1,35 +1,60 @@
 const lodash = require('lodash');
 const validatorLib = require('validator');
-const typeChecker = require('./type_checker');
+const Type = require('./type');
 
-// =====================================================================================================================
-typeChecker.set('json', { extend: 'string', validator: validatorLib.isJson });
+const TYPES = {};
+TYPES.any = Type;
+TYPES.null = TYPES.any.extend('null', { validator: lodash.isNull });
+TYPES.boolean = TYPES.any.extend('boolean', { validator: v => v === 0 | v === 1 | lodash.isBoolean(v) });
+TYPES.string = TYPES.any.extend('string', { validator: lodash.isString });
+TYPES.number = TYPES.any.extend('number', { validator: lodash.isNumber });
+TYPES.integer = TYPES.any.extend('integer', { validator: lodash.isInteger });
+TYPES.unsigned = TYPES.integer.extend('unsigned', { validator: v => v >= 0 });
+TYPES.array = TYPES.any.extend('array', { validator: lodash.isArray });
+TYPES.object = TYPES.any.extend('object', { validator: v => lodash.isObject(v) && !lodash.isArray(v) });
+TYPES.buffer = TYPES.any.extend('buffer', { validator: lodash.isBuffer });
 
-typeChecker.set('mongo', { extend: 'string', validator: validatorLib.isMongoId });
-typeChecker.set('uuid', { extend: 'string', validator: validatorLib.isUUID });
-typeChecker.set('md5', { extend: 'string', validator: validatorLib.isMD5 });
-typeChecker.set('base64', { extend: 'string', validator: validatorLib.isBase64 });
-typeChecker.set('ip', { extend: 'string', validator: validatorLib.isIP });
+TYPES.bool = TYPES.boolean.extend('bit or bool', {
+  parse: v => ({ 0: false, 1: true, false: false, true: true })[v.toLowerCase()],
+});
+TYPES.str = TYPES.string.extend('not empty string', { parse: v => v.trim(), validator: v => v.length > 0 });
+TYPES.num = TYPES.number.extend('num str', { parse: Number, validator: v => !lodash.isNaN(v) });
+TYPES.int = TYPES.integer.extend('int str', { parse: Number });
+TYPES.uint = TYPES.unsigned.extend('uint str', { parse: Number });
+TYPES.arr = TYPES.array.extend('split array', { parse: v => v.split(',') });
+TYPES.obj = TYPES.object.extend('json object', { parse: JSON.parse });
 
-typeChecker.set('url', { extend: 'str', validator: validatorLib.isURL });
-typeChecker.set('uri', { extend: 'str', validator: validatorLib.isDataURI });
-typeChecker.set('magnet', { extend: 'str', validator: validatorLib.isMagnetURI });
-typeChecker.set('email', { extend: 'str', validator: validatorLib.isEmail });
+TYPES.json = TYPES.string.extend('json', { validator: validatorLib.isJson });
+TYPES.mongo = TYPES.string.extend('mongo', { validator: validatorLib.isMongoId });
+TYPES.uuid = TYPES.string.extend('uuid', { validator: validatorLib.isUUID });
+TYPES.md5 = TYPES.string.extend('md5', { validator: validatorLib.isMD5 });
+TYPES.base64 = TYPES.string.extend('base64', { validator: validatorLib.isBase64 });
+TYPES.ip = TYPES.string.extend('ip address', { validator: validatorLib.isIP });
+TYPES.url = TYPES.string.extend('url', { validator: validatorLib.isURL });
+TYPES.uri = TYPES.string.extend('uri', { validator: validatorLib.isDataURI });
+TYPES.magnet = TYPES.string.extend('magnet', { validator: validatorLib.isMagnetURI });
+TYPES.email = TYPES.string.extend('email', { validator: validatorLib.isEmail });
 
-// =====================================================================================================================
-class Parameter {
-  constructor(field, {
-    path = undefined,
-    type = 'any', // 大小写敏感
-    'default': defaulted, // eslint-disable-line quote-props
+class Entry {
+  constructor({
+    path,
+    type: typeName = 'any',
+    'default': defaultValue,
     required = false,
     ...conditionTable
   } = {}) {
-    this.field = field;
-    this.fullPath = path ? `${path}.${field}` : field;
-    this.default = lodash.isFunction(defaulted) ? defaulted : () => defaulted;
+    this.path = path;
+    this.default = lodash.isFunction(defaultValue) ? defaultValue : () => defaultValue;
     this.required = lodash.isFunction(required) ? required : () => required;
-    this.checker = typeChecker.disjunctive(lodash.isArray(type) ? type : [type]);
+
+    const typeNames = Array.isArray(typeName) ? typeName : [typeName];
+    this.validator = Type.any(typeNames.map(name => {
+      const type = TYPES[name];
+      if (!type) {
+        throw new TypeError(`Can not found type "${name}"`);
+      }
+      return type;
+    }));
 
     this.conditionTable = lodash.mapValues(conditionTable, (condition, name) => {
       if (lodash.isFunction(condition)) {
@@ -39,18 +64,20 @@ class Parameter {
     });
   }
 
-  pick(inData, outData) {
+  pick(field, inData, outData) {
+    const fullPath = this.path ? `${this.path}.${field}` : field;
+
     // 检查已验证过的参数
-    let value = lodash.get(outData, this.fullPath);
+    let value = lodash.get(outData, fullPath);
 
     // 检查原始参数
     if (value === undefined) {
-      value = lodash.get(inData, this.fullPath);
+      value = lodash.get(inData, fullPath);
     }
 
     // 检查是否必填
     if (value === undefined && this.required(outData)) {
-      throw new Error(`Param "${this.fullPath}" is required`);
+      throw new Error(`Param "${fullPath}" is required`);
     }
 
     // 获取默认值
@@ -65,45 +92,34 @@ class Parameter {
 
     // 检查格式
     try {
-      value = this.checker(value);
+      value = this.validator(value);
     } catch (e) {
-      throw new Error(`Param "${this.fullPath}" do not match type "${e.message}"`);
+      throw new Error(`Param "${fullPath}" ${e.message}`);
     }
 
     // 附加检查条件
     lodash.forEach(this.conditionTable, (condition, name) => {
       if (!condition(value)) {
-        throw new Error(`Param "${this.fullPath}" do not match condition "${name}"`);
+        throw new Error(`Param "${fullPath}" do not match condition "${name}"`);
       }
     });
 
     // 写入输出集合
-    lodash.set(outData, this.field, value);
+    lodash.set(outData, field, value);
   }
 }
 
-// =====================================================================================================================
-/**
- * @param schema {Object} {
- *  field:{
- *    path?:String, type?:String, default?:*, required?:*,
- *    <String>?: function(*=Boolean),
- *    ...
- *    }
- *  ...
- *  }
- * @return {function(Object=Object)}
- */
 function parameter(schema) {
-  // object 键为[a-zA-Z]字符串时遍历能保持插入时顺序
-  const parameterSeq = lodash.map(schema, (options, field) => new Parameter(field, options));
+  const entryTable = lodash.mapValues(schema, options => new Entry(options));
 
   return function (inData) {
     const outData = {};
-    parameterSeq.forEach(picker => picker.pick(inData, outData));
+    lodash.forEach(entryTable, (entry, field) => {
+      entry.pick(field, inData, outData);
+    });
     return outData;
   };
 }
 
 module.exports = parameter;
-module.exports.types = typeChecker;
+module.exports.TYPES = TYPES;
