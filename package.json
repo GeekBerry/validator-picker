@@ -1,6 +1,6 @@
 {
   "name": "validator-picker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "validator and picker",
   "author": "geekberry@qq.com",
   "license": "MIT",
@@ -32,12 +32,10 @@
   ],
   "files": [
     "example",
-    "test",
-    "readme.js",
     "index.js",
-    "type_checker.js",
-    "type_picker.js",
+    "type.js",
     "parameter.js",
+    "type_picker.js",
     "deep_picker.js",
     "regex_picker.js"
   ]

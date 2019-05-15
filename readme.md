@@ -6,8 +6,8 @@
 ## Modules
 
 ```
-type_checker.js 
 parameter.js
+type_picker.js 
 deep_picker.js
 regex_picker.js
 ```
@@ -67,6 +67,8 @@ const ctx = {
 * validator and pick
 
 ```javascript
+const parameter = require('validator-picker/parameter');
+
 // extend your own type
 parameter.TYPES.positive = parameter.TYPES.num.extend('positive', { validator: v => v > 0 });
 
