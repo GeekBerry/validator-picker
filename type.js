@@ -13,14 +13,15 @@ class Type {
   /**
    * 检查参数是否符合要求, 符合返回 parse 过的值, 不符合抛出错误
    * @param value {*}
+   * @param message {string}
    * @return {*}
    */
-  static check(value) {
+  static check(value, message = '') {
     if (typeof value === 'string') { // 如果是字符串, 先解析
       try {
         value = this.parse(value);
       } catch (e) {
-        throw new TypeError(`parse "${this.name}" error:"${e.message}"`);
+        throw new TypeError(`type "${this.name}".parse(${value}) failed. "${message || e.message}"`);
       }
     }
 
@@ -44,11 +45,11 @@ class Type {
         return parse ? parse(value) : super.parse(value);
       }
 
-      static check(value) {
-        value = super.check(value);
+      static check(value, message = '') {
+        value = super.check(value, message);
 
         if (validator && !validator(value)) {
-          throw new TypeError(`validator "${name}" failed`);
+          throw new TypeError(`type "${name}".check(${value}) failed. "${message}"`);
         }
 
         return value;
