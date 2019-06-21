@@ -1,8 +1,8 @@
-const regexPicker = require('../regex_picker');
+const { regexPicker } = require('../');
 
 const picker = regexPicker(
   /nation-(\w+)(\.(municipality|state)-(\w+))?(\.city-(\w+))?/,
-  ['nationName', ['stateType', 'stateName'], ['cityName']],
+  [ 'nationName', [ 'stateType', 'stateName' ], [ 'cityName' ] ],
 );
 
 console.log(picker('it is not match to regex'));

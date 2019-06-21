@@ -29,4 +29,3 @@ function compile(schema) {
 
 module.exports = deepPicker;
 module.exports.compile = compile;
-

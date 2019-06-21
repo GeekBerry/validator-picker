@@ -1,12 +1,12 @@
 {
   "name": "validator-picker",
-  "version": "0.1.2",
+  "version": "0.2.1",
   "description": "validator and picker",
   "author": "geekberry@qq.com",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "test": "node ./test"
+    "test": "jest ./test"
   },
   "homepage": "https://github.com/GeekBerry/validator-picker#readme",
   "repository": {
@@ -20,7 +20,9 @@
     "lodash": "^4.17.11",
     "validator": "^10.11.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "jest": "^24.8.0"
+  },
   "keywords": [
     "validator",
     "picker",
@@ -33,7 +35,7 @@
   "files": [
     "example",
     "index.js",
-    "type.js",
+    "types.js",
     "parameter.js",
     "type_picker.js",
     "deep_picker.js",

@@ -1,4 +1,4 @@
-const deepPicker = require('../deep_picker');
+const { deepPicker } = require('../');
 
 const data = {
   body: {
@@ -6,8 +6,8 @@ const data = {
       State: {
         Name: 'HeBei',
         Cities: [
-          { Name: 'BaoDing', ParticulateMatter: [10, 200] },
-          { Name: 'ShiJiaZhuang', ParticulateMatter: [50, 400] },
+          { Name: 'BaoDing', ParticulateMatter: [ 10, 200 ] },
+          { Name: 'ShiJiaZhuang', ParticulateMatter: [ 50, 400 ] },
         ],
       },
     },

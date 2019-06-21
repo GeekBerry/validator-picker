@@ -1,9 +1,8 @@
 const lodash = require('lodash');
-
-const SPCIAL_KEY_NAME = '~~SPCIAL_KEY_NAME~~';
+const SPECIAL_KEY_NAME = '~~SPECIAL_KEY_NAME~~';
 
 function prepend(v) {
-  return lodash.isArray(v) ? [SPCIAL_KEY_NAME, v.map(prepend)] : v;
+  return lodash.isArray(v) ? [ SPECIAL_KEY_NAME, v.map(prepend) ] : v;
 }
 
 /**
@@ -22,7 +21,7 @@ function regexPicker(regex, fields) {
       new RegExp(regex, flag),
       (...args) => {
         let obj = lodash.zipObject(array, args);
-        obj[SPCIAL_KEY_NAME] = undefined;
+        obj[ SPECIAL_KEY_NAME ] = undefined;
         results.push(lodash.omitBy(obj, lodash.isUndefined));
       },
     );

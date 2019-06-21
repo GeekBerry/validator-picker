@@ -1,4 +1,4 @@
-const typePicker = require('../type_picker');
+const { typePicker } = require('../');
 
 const user = {
   name: 'Tom',
@@ -17,7 +17,7 @@ const user = {
     },
   ],
   birthday: new Date('2000-01-01'),
-  verbose: 'there are some thing do not wang to output.'
+  verbose: 'there are some thing do not wang to output.',
 };
 
 // ----------------------------------------------------------------------------

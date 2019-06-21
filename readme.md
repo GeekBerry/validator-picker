@@ -1,3 +1,6 @@
+[![NPM version](https://img.shields.io/npm/v/validator-picker.svg)](https://www.npmjs.com/package/validator-picker)
+[![Coverage Status](https://coveralls.io/repos/github/GeekBerry/validator-picker/badge.svg?branch=master)](https://coveralls.io/github/GeekBerry/validator-picker?branch=master)
+
 # Validator And Pickers
 
 ## Install
@@ -6,6 +9,7 @@
 ## Modules
 
 ```
+types.js
 parameter.js
 type_picker.js 
 deep_picker.js
@@ -14,41 +18,58 @@ regex_picker.js
 
 ## Usage
 
-### 1. parameter
-
-* Types
+### types
 
 type      | note
 ----------|-----------------------------------------------------------------------------
-any       | accept any type
+null      | accept `null`
 boolean   | base on `lodash.isBoolean`.
-bool      | extend `boolean`, auto parser "true", "1", "false", "0" ignore case.
+bool      | extend `boolean`, auto parser "true", "false" ignore case.
 string    | base on `lodash.isString`.
 str       | extend `string`, auto trim and check length > 0
-number    | base on `lodash.isNumber`.
-num       | extend `number`, auto parser string to number
-integer   | base on `lodash.isInteger`.
-int       | extend `integer`, auto parser string to number
-unsigned  | extend `integer`, which check value >= 0 
-uint      | extend `unsigned`, auto parser string to number
-array     | base on `lodash.isArray`.
-arr       | extend `array`, auto parser string like '1,2,3'
-object    | base on `lodash.isObject`.
-obj       | extend `object`, auto parser json string '{"name":"Tom"}'
-json      | extend `string`, base on validator.isJson
-mongo     | extend `string`, base on validator.isMongoId
-uuid      | extend `string`, base on validator.isUUID
-md5       | extend `string`, base on validator.isMD5
+number    | base on `!Number.isNaN && lodash.isNumber && Number.isFinite`.
+num       | extend `number`, auto parser string by `Number`
+integer   | base on `Number.isInteger`.
+int       | extend `integer`, auto parser string by `Number`
+array     | base on `Array.isArray`.
+arr       | extend `array`, auto parser string like '1,2,3' by `split(',')`
+object    | base on `lodash.isObject && !Array.isArray`.
+obj       | extend `object`, auto parser json string '{"name":"Tom"}' by `JSON.parse`
+json      | pass `JSON.parse`
+hex       | test by regex `/^[0-9a-f]*$/i`
+mongoId   | extend `hex`, check `length === 24`
+md5       | extend `hex`, check `length === 32`
+sha1      | extend `hex`, check `length === 40`
+sha256    | extend `hex`, check `length === 96`
+sha512    | extend `hex`, check `length === 128`
 base64    | extend `string`, base on validator.isBase64
-ip        | extend `string`, base on validator.isIP
-url       | extend `str`, base on validator.isURL
-uri       | extend `str`, base on validator.isDataURI
-magnet    | extend `str`, base on validator.isMagnetURI
-email     | extend `str`, base on validator.isEmail
-
-* Example data
+jwt       | base on validator.isJWT
+uuid      | base on validator.isUUID
+ip        | base on validator.isIP
+url       | base on validator.isURL
+uri       | base on validator.isDataURI
+magnet    | base on validator.isMagnetURI
+email     | base on validator.isEmail
 
 ```javascript
+const TYPES = require('validator-picker/types');
+// const { TYPES } = require('validator-picker');
+
+console.log(TYPES.number(1)); // 1
+
+// TYPES.number('string') got Error
+```
+
+### parameter
+
+```javascript
+const TYPES = require('validator-picker/types');
+const parameter = require('validator-picker/parameter');
+// const { TYPES, parameter } = require('validator-picker');
+
+// extend your own type
+TYPES.positive = TYPES.num.extend(v => v > 0);
+
 const ctx = {
   params: {
     id: '00000000-0000-0000-0000-000000000000',
@@ -58,39 +79,30 @@ const ctx = {
     callback: null,
   },
   body: {
-    user: '{"name":" Tom ","locations":[{"city":"BJ","nation":"CHINA"}]}',
+    user: '{"name":" Tom ","scores":"100,20,30,40"}',
     data: Buffer.from('1234567890'),
   },
 };
-```
 
-* validator and pick
-
-```javascript
-const parameter = require('validator-picker/parameter');
-
-// extend your own type
-parameter.TYPES.positive = parameter.TYPES.num.extend('positive', { validator: v => v > 0 });
-
-const ret = parameter({
+const picker = parameter({
   id: { path: 'params', type: 'uuid', required: true },
-  page: { path: 'query', type: 'uint', default: 1 },
+  page: { path: 'query', type: TYPES.int, default: 1 },
   page_size: {
     path: 'query', type: 'positive', default: 10,
     'page size range': v => 1 <= v && v <= 100,
   },
   skip: { default: data => (data.page - 1) * data.page_size },
 
-  endpoint: { path: 'header', type: ['url', 'null'], required: true },
-  callback: { path: 'header', type: ['url', 'null'], required: true },
+  endpoint: { path: 'header', type: [ 'url', 'null' ], required: true },
+  callback: { path: 'header', type: [ 'url', 'null' ], required: true },
 
   user: { path: 'body', type: 'obj' },
-  name: { path: 'user', type: 'str' },
-  'locations[0].city': { path: 'user', type: 'str', required: v => v.user },
+  'user.scores': { type: TYPES.arr.each(TYPES.int) },
   data: { path: 'body', type: 'buffer' },
-})(ctx);
+});
 
-console.log(ret)
+const ret = picker(ctx);
+console.log(ret);
 
 /*
 { id: '00000000-0000-0000-0000-000000000000',
@@ -99,16 +111,14 @@ console.log(ret)
   skip: 0,
   endpoint: 'http://www.google.com',
   callback: null,
-  user: { name: ' Tom ', locations: [ [Object] ] },
-  name: 'Tom',
-  locations: [ { city: 'BJ' } ],
+  user: { name: ' Tom ', scores: [ 100, 20, 30, 40 ] },
   data: <Buffer 31 32 33 34 35 36 37 38 39 30> }
 */
 ```
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/parameter.js)
 
-### 2. typePicker
+### typePicker
 
 通常用于输出数据前, 对返回值的域范围和类型进行过滤和限定.  
 It is usually used to filter and qualify the field scope and type of the return value before output data.
@@ -124,7 +134,7 @@ Number  | base on `lodash.isNumber`.
 String  | base on `lodash.isString`.
 Date    | base on `lodash.isDate`.
 Buffer  | base on `lodash.isBuffer` (not include `ArrayBuffer`).
-Array   | base on `lodash.isArray`, priority is higher than `Object` (array is object too).
+Array   | base on `Array.isArray`, priority is higher than `Object` (array is object too).
 Object  | base on `lodash.isObject`.
 [...]   | recursion usage, define a array element type. only support one defined schema.
 {...}   | recursion usage
@@ -135,7 +145,10 @@ Object  | base on `lodash.isObject`.
 const user = {
   name: 'Tom',
   age: 22,
-  sex: 'male',
+  adult: true,
+  cash: null,
+  birthday: new Date('2000-01-01'),
+  file: Buffer.from('62E2'),
   education: [
     {
       city: 'Shanghai',
@@ -148,8 +161,10 @@ const user = {
       gpa: 100.0,
     },
   ],
-  birthday: new Date('2000-01-01'),
-  verbose: 'there are some thing do not wang to output.'
+  parent: {
+    mom: 'Anny',
+    dad: 'King',
+  },
 };
 ```
 
@@ -157,6 +172,7 @@ const user = {
 
 ```javascript
 const typePicker = require('validator-picker/type_picker');
+// const { typePicker } = require('validator-picker');
 
 const samplePicker = typePicker({
   name: String,
@@ -211,7 +227,7 @@ Fields whose types do not match the definition will not be output, as you see wh
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/type_picker.js)
 
-### 3. deepPicker
+### deepPicker
 
 用于从将复杂结构的数据中提取除部分信息.  
 Used to extract partial information from data in a complex structure.
@@ -285,7 +301,7 @@ console.log(picker(data));
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/example/deep_picker.js)
 
-### 4. regexPicker
+### regexPicker
 
 用于更方便的从正则表达式中获取所需的域.  
 To make it easier to get the required fields from regular expressions.  
