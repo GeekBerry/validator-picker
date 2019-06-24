@@ -18,7 +18,7 @@ regex_picker.js
 
 ## Usage
 
-### types
+### [types](https://github.com/GeekBerry/validator-picker/blob/master/types.js)
 
 type      | note
 ----------|-----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ arr       | extend `array`, auto parser string like '1,2,3' by `split(',')`
 object    | base on `lodash.isObject && !Array.isArray`.
 obj       | extend `object`, auto parser json string '{"name":"Tom"}' by `JSON.parse`
 json      | pass `JSON.parse`
-hex       | test by regex `/^[0-9a-f]*$/i`
+hex       | test by regex `/^[0-9a-f]+$/i`
 mongoId   | extend `hex`, check `length === 24`
 md5       | extend `hex`, check `length === 32`
 sha1      | extend `hex`, check `length === 40`
@@ -57,10 +57,63 @@ const TYPES = require('validator-picker/types');
 
 console.log(TYPES.number(1)); // 1
 
-// TYPES.number('string') got Error
+// TYPES.number('string') throw Error
 ```
 
-### parameter
+* extend your own type
+```javascript
+const TYPES = require('validator-picker/types');
+
+console.log(TYPES.type instanceof TYPES.Type); // true
+console.log(TYPES.int instanceof TYPES.Type); // true
+console.log(TYPES.int instanceof TYPES.type); // false
+```
+
+```javascript
+// extend type base on TYPES.num
+TYPES.positive = TYPES.num.extend(v => v > 0);
+
+// extend type base on TYPES.string use parse front
+TYPES.true = TYPES.string.parse(v => v.toLowerCase()).extend(v => v === 'true');
+
+console.log(TYPES.positive(1)); // true
+// console.log(TYPES.positive(0)); // throw Error
+console.log(TYPES.true('TrUe')); // true
+// console.log(TYPES.true('False')); // throw Error
+```
+
+```javascript
+// parse and extend order
+TYPES.x = TYPES.type
+  .parse(v => {
+    console.log('p1');
+    return `p1(${v})`;
+  })
+  .extend(() => {
+    console.log('e1');
+    return true;
+  })
+  .parse(v => {
+    console.log('p2');
+    return `p2(${v})`;
+  })
+  .extend(() => {
+    console.log('e2');
+    return true;
+  });
+
+/*
+p2
+p1
+e1
+e2
+ */
+console.log(TYPES.x('A')); // p1(p2(A))
+```
+
+[more example](https://github.com/GeekBerry/validator-picker/blob/master/test/types.test.js)
+
+### [parameter](https://github.com/GeekBerry/validator-picker/blob/master/parameter.js)
 
 ```javascript
 const TYPES = require('validator-picker/types');
@@ -116,9 +169,9 @@ console.log(ret);
 */
 ```
 
-[more example](https://github.com/GeekBerry/validator-picker/blob/master/example/parameter.js)
+[more example](https://github.com/GeekBerry/validator-picker/blob/master/test/parameter.test.js)
 
-### typePicker
+### [typePicker](https://github.com/GeekBerry/validator-picker/blob/master/type_picker.js)
 
 通常用于输出数据前, 对返回值的域范围和类型进行过滤和限定.  
 It is usually used to filter and qualify the field scope and type of the return value before output data.
@@ -128,6 +181,7 @@ It is usually used to filter and qualify the field scope and type of the return 
 type    | note
 --------|----------------------------------------------------------------------------------
 true    | accept any type
+false   | drop
 null    | accept `null` type only
 Boolean | base on `lodash.isBoolean`.
 Number  | base on `lodash.isNumber`.
@@ -225,7 +279,44 @@ console.log(detailedPicker(user));
 类型不符合定义的域将不会被输出, 如 `score` 为 null 输出时被过滤.  
 Fields whose types do not match the definition will not be output, as you see when `score` is null it is not been output. 
 
-[more example](https://github.com/GeekBerry/validator-picker/blob/master/example/type_picker.js)
+* allowKnown
+```javascript
+const typePicker = require('validator-picker/type_picker');
+
+const picker = typePicker({
+  name: String,
+  cash: Number, // pick is Number
+  education: [{
+    school: false, // drop school
+  }]
+}, true); // allowKnown
+
+const user = {
+  name: 'Tom',
+  cash: null,
+  education: [
+    {
+      city: 'Shanghai',
+      school: 'No.1 high school',
+    },
+    {
+      city: 'Beijing',
+      school: 'Beijing University',
+    },
+  ],
+};
+
+console.log(picker(user));
+/*
+{ name: 'Tom',
+  education: [ { city: 'Shanghai' }, { city: 'Beijing' } ] }
+ */
+```
+
+没有被定义的域原值输出, 标记为 `false` 的值不会输出.
+Fields whose set output as original, fields set `false` will not output.
+
+[more example](https://github.com/GeekBerry/validator-picker/blob/master/test/type_picker.test.js)
 
 ### deepPicker
 

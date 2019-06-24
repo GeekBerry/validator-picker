@@ -2,12 +2,17 @@ const lodash = require('lodash');
 
 /**
  * 将 schema 编译成挑选函数
- * @param schema {any}
- * @return {function}
+ * @param schema {*}
+ * @param allowUnknown {Boolean}
+ * @return {Function}
  */
-function compile(schema) {
+function compile(schema, allowUnknown = false) {
   if (schema === true) {
     return v => v;
+  }
+
+  if (schema === false) {
+    return () => undefined;
   }
 
   if (schema === null) {
@@ -45,11 +50,11 @@ function compile(schema) {
   }
 
   if (lodash.isArray(schema)) {
-    return compileArray(schema);
+    return compileArray(schema, allowUnknown);
   }
 
-  if (lodash.isObject(schema)) {
-    return compileObject(schema);
+  if (lodash.isObject(schema) && !lodash.isFunction(schema)) {
+    return compileObject(schema, allowUnknown);
   }
 
   throw new Error(`Unknown pick type "${schema}"`);
@@ -57,14 +62,15 @@ function compile(schema) {
 
 /**
  * @param schema {Array}
+ * @param allowUnknown {Boolean}
  * @return {function}
  */
-function compileArray(schema) {
+function compileArray(schema, allowUnknown = false) {
   if (schema.length !== 1) {
     throw new Error(`Array schema must have exact one sub schema, got ${schema.length}`);
   }
 
-  const picker = compile(schema[ 0 ]);
+  const picker = compile(schema[0], allowUnknown);
   return (array) => {
     if (!lodash.isArray(array)) {
       return undefined;
@@ -83,12 +89,15 @@ function compileArray(schema) {
 
 /**
  * @param schema {Object}
+ * @param allowUnknown {Boolean}
  * @return {function}
  */
-function compileObject(schema) {
+function compileObject(schema, allowUnknown = false) {
+  const defaultPicker = allowUnknown ? v => v : v => undefined;
+
   const pickerTable = {};
-  for (const [ key, subSchema ] of Object.entries(schema)) {
-    pickerTable[ key ] = compile(subSchema);
+  for (const [key, subSchema] of Object.entries(schema)) {
+    pickerTable[key] = compile(subSchema, allowUnknown);
   }
 
   return (obj) => {
@@ -96,14 +105,15 @@ function compileObject(schema) {
       return undefined;
     }
 
-    const pickObj = {};
-    for (const [ key, picker ] of Object.entries(pickerTable)) {
-      const value = picker(obj[ key ]);
+    const result = {};
+    for (const [k, v] of Object.entries(obj)) {
+      const picker = pickerTable[k] || defaultPicker;
+      const value = picker(v);
       if (value !== undefined) {
-        pickObj[ key ] = value;
+        result[k] = value;
       }
     }
-    return pickObj;
+    return result;
   };
 }
 

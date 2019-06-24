@@ -28,10 +28,10 @@ const user = {
   },
 };
 
-test('pick error type', () => {
+test('pick unsupported type', () => {
   try {
     ret = typePicker({
-      name: false,
+      name: Symbol,
     });
   } catch (e) {
     err = e;
@@ -41,7 +41,7 @@ test('pick error type', () => {
 
 test('pick array to long', () => {
   try {
-    ret = typePicker([ Number, Boolean ]);
+    ret = typePicker([Number, Boolean]);
   } catch (e) {
     err = e;
   }
@@ -152,6 +152,25 @@ test('pick array nest', () => {
   ret = picker(user);
 
   expect(ret.education.length).toBe(2);
+});
+
+test('allow unknown', () => {
+  picker = typePicker({
+    cash: Number,
+    file: false,
+    education: [
+      {
+        school: false,
+      },
+    ],
+  }, true);
+
+  ret = picker(user);
+
+  expect(ret.cash).toBe(undefined);
+  expect(ret.file).toBe(undefined);
+  expect(ret.education[0].city).toBe('Shanghai');
+  expect(ret.education[0].school).toBe(undefined);
 });
 
 afterEach(() => {

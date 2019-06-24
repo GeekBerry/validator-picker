@@ -61,4 +61,4 @@ console.log(detailedPicker(user));
     }
   ]
 }
- */
+*/

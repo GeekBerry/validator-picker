@@ -331,11 +331,6 @@ test('hex', () => {
   expect(ret).toBe('0123456789abcdefABCDEF');
 });
 
-test('hex accept empty', () => {
-  ret = TYPES.hex('');
-  expect(ret).toBe('');
-});
-
 test('hex not accept 0x prefix', () => {
   try {
     ret = TYPES.hex('0x12');

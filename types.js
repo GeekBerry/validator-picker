@@ -131,8 +131,8 @@ TYPES.int = TYPES.integer.parse(Number);
 TYPES.arr = TYPES.array.parse(v => v.split(','));
 TYPES.obj = TYPES.object.parse(JSON.parse);
 
-TYPES.json = type.extend(v => JSON.parse(v) || true); // "func() || true" means not Error is good
-TYPES.hex = TYPES.string.extend(v => /^[0-9a-f]*$/i.test(v));
+TYPES.json = type.extend(v => JSON.parse(v) || true); // "func() || true" means no Error is good
+TYPES.hex = TYPES.string.extend(v => /^[0-9a-f]+$/i.test(v));
 TYPES.mongoId = TYPES.hex.extend(v => v.length === 24);
 TYPES.md5 = TYPES.hex.extend(v => v.length === 32); // and md4
 TYPES.sha1 = TYPES.hex.extend(v => v.length === 40);
