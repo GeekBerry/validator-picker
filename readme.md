@@ -181,7 +181,6 @@ It is usually used to filter and qualify the field scope and type of the return 
 type    | note
 --------|----------------------------------------------------------------------------------
 true    | accept any type
-false   | drop
 null    | accept `null` type only
 Boolean | base on `lodash.isBoolean`.
 Number  | base on `lodash.isNumber`.
@@ -278,43 +277,6 @@ console.log(detailedPicker(user));
 
 类型不符合定义的域将不会被输出, 如 `score` 为 null 输出时被过滤.  
 Fields whose types do not match the definition will not be output, as you see when `score` is null it is not been output. 
-
-* allowKnown
-```javascript
-const typePicker = require('validator-picker/type_picker');
-
-const picker = typePicker({
-  name: String,
-  cash: Number, // pick is Number
-  education: [{
-    school: false, // drop school
-  }]
-}, true); // allowKnown
-
-const user = {
-  name: 'Tom',
-  cash: null,
-  education: [
-    {
-      city: 'Shanghai',
-      school: 'No.1 high school',
-    },
-    {
-      city: 'Beijing',
-      school: 'Beijing University',
-    },
-  ],
-};
-
-console.log(picker(user));
-/*
-{ name: 'Tom',
-  education: [ { city: 'Shanghai' }, { city: 'Beijing' } ] }
- */
-```
-
-没有被定义的域原值输出, 标记为 `false` 的值不会输出.
-Fields whose set output as original, fields set `false` will not output.
 
 [more example](https://github.com/GeekBerry/validator-picker/blob/master/test/type_picker.test.js)
 

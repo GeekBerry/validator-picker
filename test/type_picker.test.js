@@ -154,25 +154,6 @@ test('pick array nest', () => {
   expect(ret.education.length).toBe(2);
 });
 
-test('allow unknown', () => {
-  picker = typePicker({
-    cash: Number,
-    file: false,
-    education: [
-      {
-        school: false,
-      },
-    ],
-  }, true);
-
-  ret = picker(user);
-
-  expect(ret.cash).toBe(undefined);
-  expect(ret.file).toBe(undefined);
-  expect(ret.education[0].city).toBe('Shanghai');
-  expect(ret.education[0].school).toBe(undefined);
-});
-
 afterEach(() => {
   // console.log(JSON.stringify(ret, null, 2));
   // console.log(err);
