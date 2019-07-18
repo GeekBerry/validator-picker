@@ -6,10 +6,11 @@ let picker;
 beforeAll(() => {
   picker = parameter({
     id: { type: TYPES.int, required: true },
-    page: { path: 'query', type: [ 'int', 'null' ], 'bigger then 0': v => v > 0 },
+    page: { path: 'query', type: ['int', 'null'], 'bigger then 0': v => v > 0 },
     limit: { path: 'query', default: 10 },
     title: { path: 'body', required: v => v.id > 10 },
     skip: { path: 'body', default: v => (v.page - 1) * v.limit },
+    desc: { path: 'body', 'logger than title': (v, o) => v.length > o.title.length },
   });
 });
 
@@ -21,6 +22,9 @@ test('error condition', () => {
   } catch (e) {
     err = e;
   }
+
+  expect(ret).toBe(undefined);
+  expect(err instanceof Error).toBe(true);
 });
 
 test('normal', () => {
@@ -43,6 +47,9 @@ test('miss required', () => {
   } catch (e) {
     err = e;
   }
+
+  expect(ret).toBe(undefined);
+  expect(err instanceof Error).toBe(true);
 });
 
 test('error format', () => {
@@ -54,6 +61,9 @@ test('error format', () => {
   } catch (e) {
     err = e;
   }
+
+  expect(ret).toBe(undefined);
+  expect(err instanceof Error).toBe(true);
 });
 
 test('error condition', () => {
@@ -65,6 +75,26 @@ test('error condition', () => {
   } catch (e) {
     err = e;
   }
+
+  expect(ret).toBe(undefined);
+  expect(err instanceof Error).toBe(true);
+});
+
+test('error complicated condition', () => {
+  try {
+    ret = picker({
+      id: 1,
+      body: {
+        title: 'title',
+        desc: 'x',
+      },
+    });
+  } catch (e) {
+    err = e;
+  }
+
+  expect(ret).toBe(undefined);
+  expect(err instanceof Error).toBe(true);
 });
 
 afterEach(() => {

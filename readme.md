@@ -181,6 +181,7 @@ It is usually used to filter and qualify the field scope and type of the return 
 type    | note
 --------|----------------------------------------------------------------------------------
 true    | accept any type
+false   | drop any type
 null    | accept `null` type only
 Boolean | base on `lodash.isBoolean`.
 Number  | base on `lodash.isNumber`.

@@ -58,6 +58,16 @@ test('pick any', () => {
   expect(ret.name).toBe('Tom');
 });
 
+test('drop any', () => {
+  picker = typePicker({
+    name: false,
+  });
+  ret = picker(user);
+
+  expect(Object.keys(ret).length).toBe(0);
+  expect(ret.name).toBe(undefined);
+});
+
 test('pick null', () => {
   picker = typePicker(null);
   ret = picker(user);

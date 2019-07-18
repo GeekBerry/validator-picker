@@ -3,10 +3,10 @@ const TYPES = require('./types');
 
 class Entry {
   static _makeTypeValidator(typeOrName) {
-    const typeOrNameArray = Array.isArray(typeOrName) ? typeOrName : [ typeOrName ];
-    const typeArray = typeOrNameArray.map(v => (lodash.isString(v) ? TYPES[ v ] : v));
+    const typeOrNameArray = Array.isArray(typeOrName) ? typeOrName : [typeOrName];
+    const typeArray = typeOrNameArray.map(v => (lodash.isString(v) ? TYPES[v] : v));
 
-    return function (value) {
+    return function(value) {
       for (const validator of typeArray) {
         try {
           return validator(value);
@@ -24,9 +24,9 @@ class Entry {
       }
     });
 
-    return function (value) {
+    return function(value, outData) {
       lodash.forEach(conditionTable, (condition, name) => {
-        if (!condition(value)) {
+        if (!condition(value, outData)) {
           throw new Error(name);
         }
       });
@@ -82,7 +82,7 @@ class Entry {
 
     // 附加检查条件
     try {
-      this.conditionChecker(value);
+      this.conditionChecker(value, outData);
     } catch (e) {
       throw new Error(`"${fullPath}" do not match condition "${e.message}"`);
     }
