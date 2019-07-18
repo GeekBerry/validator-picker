@@ -10,6 +10,10 @@ function compile(schema) {
     return v => v;
   }
 
+  if (schema === false) {
+    return v => undefined;
+  }
+
   if (schema === null) {
     return v => (v === null ? v : undefined);
   }
@@ -48,8 +52,12 @@ function compile(schema) {
     return compileArray(schema);
   }
 
-  if (lodash.isObject(schema) && !lodash.isFunction(schema)) {
+  if (lodash.isPlainObject(schema)) {
     return compileObject(schema);
+  }
+
+  if (lodash.isFunction(schema)) {
+    return v => (schema(v) ? v : undefined);
   }
 
   throw new Error(`Unknown pick type "${schema}"`);
@@ -64,7 +72,7 @@ function compileArray(schema) {
     throw new Error(`Array schema must have exact one sub schema, got ${schema.length}`);
   }
 
-  const picker = compile(schema[ 0 ]);
+  const picker = compile(schema[0]);
   return (array) => {
     if (!lodash.isArray(array)) {
       return undefined;
@@ -87,8 +95,8 @@ function compileArray(schema) {
  */
 function compileObject(schema) {
   const pickerTable = {};
-  for (const [ key, subSchema ] of Object.entries(schema)) {
-    pickerTable[ key ] = compile(subSchema);
+  for (const [key, subSchema] of Object.entries(schema)) {
+    pickerTable[key] = compile(subSchema);
   }
 
   return (obj) => {
@@ -97,10 +105,10 @@ function compileObject(schema) {
     }
 
     const pickObj = {};
-    for (const [ key, picker ] of Object.entries(pickerTable)) {
-      const value = picker(obj[ key ]);
+    for (const [key, picker] of Object.entries(pickerTable)) {
+      const value = picker(obj[key]);
       if (value !== undefined) {
-        pickObj[ key ] = value;
+        pickObj[key] = value;
       }
     }
     return pickObj;

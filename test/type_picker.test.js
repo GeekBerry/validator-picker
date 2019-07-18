@@ -28,17 +28,6 @@ const user = {
   },
 };
 
-test('pick unsupported type', () => {
-  try {
-    ret = typePicker({
-      name: Symbol,
-    });
-  } catch (e) {
-    err = e;
-  }
-  expect(err instanceof Error).toBe(true);
-});
-
 test('pick array to long', () => {
   try {
     ret = typePicker([Number, Boolean]);
@@ -162,6 +151,21 @@ test('pick array nest', () => {
   ret = picker(user);
 
   expect(ret.education.length).toBe(2);
+});
+
+test('pick function', () => {
+  picker = typePicker({
+    education: [
+      {
+        city: v => v === 'Beijing',
+      },
+    ],
+  });
+  ret = picker(user);
+
+  expect(ret.education.length).toBe(2);
+  expect(ret.education[0].city).toBe(undefined);
+  expect(ret.education[1].city).toBe('Beijing');
 });
 
 afterEach(() => {
