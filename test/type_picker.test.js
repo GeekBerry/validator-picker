@@ -157,7 +157,7 @@ test('pick function', () => {
   picker = typePicker({
     education: [
       {
-        city: v => v === 'Beijing',
+        city: v => v === 'Beijing' ? v : undefined,
       },
     ],
   });

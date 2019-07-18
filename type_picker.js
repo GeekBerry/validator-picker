@@ -11,7 +11,7 @@ function compile(schema) {
   }
 
   if (schema === false) {
-    return v => undefined;
+    return () => undefined;
   }
 
   if (schema === null) {
@@ -57,7 +57,7 @@ function compile(schema) {
   }
 
   if (lodash.isFunction(schema)) {
-    return v => (schema(v) ? v : undefined);
+    return schema;
   }
 
   throw new Error(`Unknown pick type "${schema}"`);
