@@ -57,10 +57,16 @@ function compile(schema) {
   }
 
   if (lodash.isFunction(schema)) {
-    return schema;
+    return compileFunction(schema);
   }
 
   throw new Error(`Unknown pick type "${schema}"`);
+}
+
+function compileFunction(func) {
+  return (obj) => {
+    return compile(func(obj))(obj);
+  };
 }
 
 /**

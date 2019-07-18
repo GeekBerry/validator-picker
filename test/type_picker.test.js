@@ -155,17 +155,26 @@ test('pick array nest', () => {
 
 test('pick function', () => {
   picker = typePicker({
-    education: [
-      {
-        city: v => v === 'Beijing' ? v : undefined,
-      },
-    ],
+    education: v => v.length === 2 ? [{ city: String }] : false,
   });
   ret = picker(user);
+  console.log(JSON.stringify({ ret }, null, 2));
 
   expect(ret.education.length).toBe(2);
-  expect(ret.education[0].city).toBe(undefined);
+  expect(Object.keys(ret.education[0]).length).toBe(1);
+  expect(ret.education[0].city).toBe('Shanghai');
+  expect(Object.keys(ret.education[1]).length).toBe(1);
   expect(ret.education[1].city).toBe('Beijing');
+});
+
+test('pick function false', () => {
+  picker = typePicker({
+    education: v => v.length === 1 ? [{ city: String }] : false,
+  });
+  ret = picker(user);
+  console.log(JSON.stringify({ ret }, null, 2));
+
+  expect(ret.education).toBe(undefined);
 });
 
 afterEach(() => {
