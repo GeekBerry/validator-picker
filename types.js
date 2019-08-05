@@ -10,10 +10,10 @@ class Type extends Function {
 
     return new Proxy(this, {
       get(self, key) {
-        return key === 'name' ? name : self[ key ];
+        return key === 'name' ? name : self[key];
       },
 
-      apply(self, bind, [ value ]) {
+      apply(self, bind, [value]) {
         try {
           return self.__call__(value);
         } catch (e) {
@@ -68,7 +68,7 @@ class Type extends Function {
 
   /**
    * validate each of value
-   * @param validator {function(any):any}
+   * @param validator {function(v, k, o):any}
    * @return {Type}
    */
   each(validator) {
@@ -77,8 +77,8 @@ class Type extends Function {
       (value) => {
         value = this.__call__(value);
 
-        lodash.forEach(value, (v, k) => {
-          value[ k ] = validator(v);
+        lodash.forEach(value, (v, k, o) => {
+          value[k] = validator(v, k, o);
         });
 
         return value;
@@ -94,7 +94,7 @@ const TYPES = new Proxy(
   { Type, type }, // as a module export
   {
     get(self, name) {
-      const type = self[ name ];
+      const type = self[name];
       if (!type) {
         throw new Error(`do not have type named "${name}"`);
       }
@@ -110,7 +110,7 @@ const TYPES = new Proxy(
         throw new Error('validator must be function');
       }
 
-      self[ name ] = new Type(name, validator);
+      self[name] = new Type(name, validator);
     },
   },
 );
@@ -124,7 +124,7 @@ TYPES.array = type.extend(Array.isArray);
 TYPES.object = type.extend(v => lodash.isObject(v) && !Array.isArray(v));
 TYPES.buffer = type.extend(lodash.isBuffer);
 
-TYPES.bool = TYPES.boolean.parse(v => ({ false: false, true: true })[ v.toLowerCase() ]);
+TYPES.bool = TYPES.boolean.parse(v => ({ false: false, true: true })[v.toLowerCase()]);
 TYPES.str = TYPES.string.parse(v => v.trim()).extend(v => v.length > 0);
 TYPES.num = TYPES.number.parse(Number);
 TYPES.int = TYPES.integer.parse(Number);
@@ -138,6 +138,8 @@ TYPES.md5 = TYPES.hex.extend(v => v.length === 32); // and md4
 TYPES.sha1 = TYPES.hex.extend(v => v.length === 40);
 TYPES.sha256 = TYPES.hex.extend(v => v.length === 96);
 TYPES.sha512 = TYPES.hex.extend(v => v.length === 128);
+
+TYPES.hex0x = TYPES.string.extend(v => /^0x[0-9a-f]+$/i.test(v));
 
 TYPES.base64 = TYPES.string.extend(validatorLib.isBase64);
 TYPES.jwt = type.extend(validatorLib.isJWT);

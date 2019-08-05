@@ -218,12 +218,12 @@ test('array not accept array string', () => {
 
 test('arr', () => {
   ret = TYPES.arr('1,,3,');
-  expect(ret).toStrictEqual([ '1', '', '3', '' ]);
+  expect(ret).toStrictEqual(['1', '', '3', '']);
 });
 
 test('arr not accept json', () => {
   ret = TYPES.arr('[1,2,3]');
-  expect(ret).toStrictEqual([ '[1', '2', '3]' ]);
+  expect(ret).toStrictEqual(['[1', '2', '3]']);
 });
 // ----------------------------------------------------------------------------
 test('object', () => {
@@ -282,31 +282,31 @@ test('buffer', () => {
 
 // ----------------------------------------------------------------------------
 test('mongoId', () => {
-  const string = lodash.range(24).map(() => '0123456789abcdefABCDEF'[ lodash.random(0, 21) ]).join('');
+  const string = lodash.range(24).map(() => '0123456789abcdefABCDEF'[lodash.random(0, 21)]).join('');
   ret = TYPES.mongoId(string);
   expect(ret).toBe(string);
 });
 
 test('md5', () => {
-  const string = lodash.range(32).map(() => '0123456789abcdefABCDEF'[ lodash.random(0, 21) ]).join('');
+  const string = lodash.range(32).map(() => '0123456789abcdefABCDEF'[lodash.random(0, 21)]).join('');
   ret = TYPES.md5(string);
   expect(ret).toBe(string);
 });
 
 test('sha1', () => {
-  const string = lodash.range(40).map(() => '0123456789abcdefABCDEF'[ lodash.random(0, 21) ]).join('');
+  const string = lodash.range(40).map(() => '0123456789abcdefABCDEF'[lodash.random(0, 21)]).join('');
   ret = TYPES.sha1(string);
   expect(ret).toBe(string);
 });
 
 test('sha256', () => {
-  const string = lodash.range(96).map(() => '0123456789abcdefABCDEF'[ lodash.random(0, 21) ]).join('');
+  const string = lodash.range(96).map(() => '0123456789abcdefABCDEF'[lodash.random(0, 21)]).join('');
   ret = TYPES.sha256(string);
   expect(ret).toBe(string);
 });
 
 test('sha512', () => {
-  const string = lodash.range(128).map(() => '0123456789abcdefABCDEF'[ lodash.random(0, 21) ]).join('');
+  const string = lodash.range(128).map(() => '0123456789abcdefABCDEF'[lodash.random(0, 21)]).join('');
   ret = TYPES.sha512(string);
   expect(ret).toBe(string);
 });
@@ -348,10 +348,25 @@ test('url', () => {
   expect(ret).toBe('http://xxx.com');
 });
 
+test('hex0x', () => {
+  ret = TYPES.hex0x('0x0123456789abcdefABCDEF');
+  expect(ret).toBe('0x0123456789abcdefABCDEF');
+});
+
 // ----------------------------------------------------------------------------
 test('arr of int', () => {
   ret = TYPES.arr.each(TYPES.int)('1,2,3');
-  expect(ret).toStrictEqual([ 1, 2, 3 ]);
+  expect(ret).toStrictEqual([1, 2, 3]);
+});
+
+test('object of int to integer', () => {
+  ret = TYPES.object.each(
+    (v, k) => {
+      TYPES.int(k);
+      return TYPES.integer(v);
+    },
+  )({ 1: 2 });
+  expect(ret).toStrictEqual({ 1: 2 });
 });
 
 afterEach(() => {

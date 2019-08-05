@@ -48,6 +48,7 @@ class Entry {
   }
 
   pick(field, inData, outData) {
+    // 不能使用数组形式的 fullPath
     const fullPath = this.path ? `${this.path}.${field}` : field;
 
     // 检查已验证过的参数

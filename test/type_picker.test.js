@@ -158,7 +158,6 @@ test('pick function', () => {
     education: v => v.length === 2 ? [{ city: String }] : false,
   });
   ret = picker(user);
-  console.log(JSON.stringify({ ret }, null, 2));
 
   expect(ret.education.length).toBe(2);
   expect(Object.keys(ret.education[0]).length).toBe(1);
