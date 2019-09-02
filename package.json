@@ -1,6 +1,6 @@
 {
   "name": "validator-picker",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "validator and picker",
   "author": "geekberry@qq.com",
   "license": "MIT",
@@ -17,8 +17,8 @@
     "url": "https://github.com/GeekBerry/validator-picker/issues"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
-    "validator": "^10.11.0"
+    "lodash": "^4.17.15",
+    "validator": "^11.1.0"
   },
   "devDependencies": {
     "jest": "^24.8.0"
@@ -33,7 +33,6 @@
     "parser"
   ],
   "files": [
-    "example",
     "index.js",
     "types.js",
     "parameter.js",
