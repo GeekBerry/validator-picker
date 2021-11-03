@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.15",
-    "validator": "^11.1.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "jest": "^24.8.0"
